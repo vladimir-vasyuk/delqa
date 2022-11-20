@@ -16,7 +16,7 @@ reg[15:0] x[NUM-1:0];
 
 genvar i;
 generate
-   for (i = 1; i < NUM; i = i + 1)
+   for (i = 0; i < NUM; i = i + 1)
       begin : reg_init
          initial
             if(i == 0)

@@ -36,25 +36,12 @@ module ether(
 	input  [6:0]   md_ctrl,    // Блок управления - сигналы управления от компьютера
 	input  [15:0]  md_val,     // Блок управления - данные записи
 	output [15:0]  md_out,     // Блок управления - данные чтения
-	output [7:0]   md_status,  // Блок управления - данные состояния
-	output [9:0]   sig_out
+	output [7:0]   md_status   // Блок управления - данные состояния
 );
 
 assign e_rst = ~rst;
 assign e_gtxc = e_rxc;
 //
-assign sig_out[4] = e_rxc;
-assign sig_out[5] = e_txc;
-assign sig_out[6] = txclkm;
-assign sig_out[7] = e_txen;
-assign sig_out[0] = e_txd[0];
-assign sig_out[1] = e_txd[1];
-assign sig_out[2] = e_txd[2];
-assign sig_out[3] = md_clk;
-assign sig_out[8] = e_mdio;
-assign sig_out[9] = ~e_rst;
-//
-
 //======================= CRC=======================//
 wire [31:0] crctx;      // CRC канала передачи
 wire [31:0] crcrx;      // CRC канала приема 

@@ -93,8 +93,7 @@ module delqa (
    output					e_rst,      // Hardware reset, active low
    output					e_mdc,      // MDC clock
    inout						e_mdio,     // MD line
-   output					e_gtxc,     // 125 MHz
-   output    [9:0]      sig_out
+   output					e_gtxc      // 125 MHz
 );
 
 //************************************************
@@ -259,21 +258,23 @@ localparam[4:0]   fp_bdl0 = 1;
 localparam[4:0]   fp_bdl1 = 2;
 localparam[4:0]   fp_bdl2 = 3;
 localparam[4:0]   fp_bdl3 = 4;
-localparam[4:0]   fp_txp1 = 5;
-localparam[4:0]   fp_txp2 = 6;
-localparam[4:0]   fp_etxp = 7;
-localparam[4:0]   fp_ftxp = 8;
-localparam[4:0]   fp_rdp1 = 9;
-localparam[4:0]   fp_rlng = 10;
-localparam[4:0]   fp_rdp2 = 11;
-localparam[4:0]   fp_erdp = 12;
-localparam[4:0]   fp_frdp = 13;
-localparam[4:0]   fp_stw1 = 14;
-localparam[4:0]   fp_stwa = 15;
-localparam[4:0]   fp_stw2 = 16;
-localparam[4:0]   fp_stwh = 17;
-localparam[4:0]   fp_rom1 = 18;
-localparam[4:0]   fp_rom2 = 19;
+localparam[4:0]   fp_bdl4 = 5;
+localparam[4:0]   fp_bdl5 = 6;
+localparam[4:0]   fp_txp1 = 7;
+localparam[4:0]   fp_txp2 = 8;
+localparam[4:0]   fp_etxp = 9;
+localparam[4:0]   fp_ftxp = 10;
+localparam[4:0]   fp_rdp1 = 11;
+localparam[4:0]   fp_rlng = 12;
+localparam[4:0]   fp_rdp2 = 13;
+localparam[4:0]   fp_erdp = 14;
+localparam[4:0]   fp_frdp = 15;
+localparam[4:0]   fp_stw1 = 16;
+localparam[4:0]   fp_stwa = 17;
+localparam[4:0]   fp_stw2 = 18;
+localparam[4:0]   fp_stwh = 19;
+localparam[4:0]   fp_rom1 = 20;
+localparam[4:0]   fp_rom2 = 21;
 reg  [4:0]  fp_state;
 reg  [4:0]  fp_next;
 wire [3:0]  fp_mode = {1'b00, romstart, rdstart, txstart};
@@ -340,7 +341,7 @@ wire [15:0] bdlq;
 wire        bdlwe;
 reg         locaddr = 1'b0;
 wire [2:0]  baddrloc = locaddr? baddr[2:0] : baddrinc[2:0];
-assign bdlwe = (dmawr & (fp_state == fp_bdl0))? dma_ack_i : 1'b0;
+assign bdlwe = (dmawr & (fp_state == fp_bdl1))? dma_ack_i : 1'b0;
 
 
 bdlreg #(.NUM(4)) bdl(
@@ -442,8 +443,7 @@ ether etherm(
    .md_ctrl(md_ctrl),
    .md_val(md_val),
    .md_out(md_out),
-   .md_status(md_status),
-   .sig_out(sig_out)
+   .md_status(md_status)
 );
 
 //************************************************
@@ -461,6 +461,7 @@ initial begin
    md_mux <= 1'b0;
    fp_state <= fp_idle;
    {rx_bdl, rx_bdh, rx_rdy} <= 3'b000;
+   dbits <= 10'd0;
 //	tx_bdl <= 1'b0; tx_bdh <= 1'b0;
 end
 
@@ -554,33 +555,25 @@ always @(posedge wb_clk_i) begin
             3'b000 : begin	// Base + 00
                if(sa_rom_chk)
                   wb_dat_o <= md_mux? {md_status, macval[55:48]} : {8'hFF, macval[55:48]};
-//                  wb_dat_o <= {8'hFF, macval[55:48]};
                else
                   wb_dat_o <= md_mux? {md_status, macval[7:0]} : {8'hFF, macval[7:0]};
-//                  wb_dat_o <= {8'hFF, macval[7:0]};
             end
             3'b001 : begin	// Base + 02
                if(sa_rom_chk)
                   wb_dat_o <= md_mux? {errs, macval[63:56]} : {8'hFF, macval[63:56]};
-//                  wb_dat_o <= {8'hFF, macval[63:56]};
                else
                   wb_dat_o <= md_mux? {errs, macval[15:8]} : {8'hFF, macval[15:8]};
-//                  wb_dat_o <= {8'hFF, macval[15:8]};
             end
             3'b010 : begin	// Base + 04
                wb_dat_o <= md_mux? {md_out[7:0], macval[23:16]} : {8'hFF, macval[23:16]};
-//               wb_dat_o <= {8'hFF, macval[23:16]};
             end
             3'b011 : begin	// Base + 06
                wb_dat_o <= md_mux? {md_out[15:8], macval[31:24]} : {8'hFF, macval[31:24]};
-//               wb_dat_o <= {8'hFF, macval[31:24]};
             end
             3'b100 : begin	// Base + 10
                wb_dat_o <= md_mux? {1'b0,md_ctrl, macval[39:32]} : {8'hFF, macval[39:32]};
-//               wb_dat_o <= {8'hFF, macval[39:32]};
             end
             3'b101 : begin	// Base + 12
-               //wb_dat_o <= {fop, fp_state, rdstart, rdproc, macval[47:40]};
                wb_dat_o <= {8'hFF, macval[47:40]};
             end
             3'b110 : begin	// Base + 14 -- var
@@ -704,7 +697,6 @@ always @(posedge wb_clk_i) begin
             f_idl: fop <= 1'b0;
             f_rst: begin   // Программный сброс
                if(&res_soft == 1'b1) begin
-                  //fop <=1'b0;
                   res_soft <= 2'b0; funcreg <= f_idl;
                end
                else begin
@@ -720,13 +712,13 @@ always @(posedge wb_clk_i) begin
                   funcreg <= f_idl;                         // сброс кода функции
                   csr_xl <= 1'b1;                           // флаг завершения работы с XBDL
 // 					{tx_bdl, tx_bdh} <= 2'b00;
-                  if(txerr == 1'b0) begin
-                     csr_xi <= 1'b1;                        // флаг передачи пакета
-                     int_req <= 1'b1;							   // флаг требования прерывания
+                  if(txerr | rderr) begin
+                     if(nxm) csr_ni <= 1'b1;                // флаг ощибки
+//                     csr_xl <= 1'b1;                        // флаг ощибки
                   end
                   else begin
-                     csr_ni <= 1'b1;                        // флаг ощибки
-//                     csr_xl <= 1'b1;                        // флаг ощибки
+                     csr_xi <= 1'b1;                        // флаг передачи пакета
+                     int_req <= 1'b1;							   // флаг требования прерывания
                   end
                end
             end
@@ -779,7 +771,7 @@ always @(posedge wb_clk_i) begin
             csr_rl <= 1'b1;                              // флаг завершения работы с RBDL
             {rx_bdl, rx_bdh, rx_rdy} <= 3'b000;          // Сброс регистров готовности режима приема
             if(rderr | txerr) begin                      // Если возникли ошибки -
-               csr_ni <= 1'b1;                           // установить флаг ощибки,
+               if(nxm) csr_ni <= 1'b1;                   // установить флаг ощибки,
 //               csr_rl <= 1'b1;                           // установить флаг ощибки
             end
             else begin                                   // Нет ошибок -
@@ -819,43 +811,73 @@ always @(posedge wb_clk_i) begin
          end
 //=====================================================================================================================
 // Работа с BDL, приемная часть (общая как для приема, так и для передачи пакета даных)
-         fp_bdl0: begin // Передача 6 слов bdl регистров по каналу DMA
+         fp_bdl0: begin // Передача 1 слова bdl регистра по каналу DMA
+            if(dmacomplete == 1'b0 & dmard == 1'b0) begin
+               dmard <= 1'b1;                            // устанавливаем флаг чтения по каналу DMA
+               haddr_sw[15:1] <= haddr[15:1];            // физический адрес (копия)
+               rderr <= 1'b0; txerr <= 1'b0;             // сброс кода ошибки
+            end
+            else if(dmard == 1'b1 & dmacomplete == 1'b1) begin
+               dmard <= 1'b0;                            // снимаем флаг чтения по каналу DMA
+               if (nxm == 1'b0) begin                    // запись окончилась без ошибок
+                  baddr <= 11'd01;                       // пропустить резервное слово BDL
+                  wcount <= 12'o7775;                    // число слов BDL (-3)
+                  haddr[21:1] <= haddr[21:1] + 1'b1;     // смещение на 1 слово
+                  fp_state <= fp_bdl1;                   // переход к приему 3-х слов данных
+               end
+               else begin
+                  fp_state <= fp_bdl5;                   // таймаут - завершение
+               end
+            end
+         end
+         fp_bdl1: begin // Прием 3-х слов bdl регистра по каналу DMA
             if(dmacomplete == 1'b0 & dmawr == 1'b0) begin
                dmawr <= 1'b1;                            // устанавливаем флаг записи по каналу DMA
-               haddr_sw[15:1] <= haddr[15:1];            // физический адрес (копия)
             end
             else if(dmawr == 1'b1 & dmacomplete == 1'b1) begin
                dmawr <= 1'b0;                            // снимаем флаг записи по каналу DMA
                if (nxm == 1'b0) begin                    // запись окончилась без ошибок
                   baddr <= 11'd01;                       // пропустить резервное слово BDL
                   locaddr <= 1'b1;                       // местный адрес
-                  fp_state <= fp_bdl1;                   // переход к извлечению данных
+                  fp_state <= fp_bdl2;                   // переход к извлечению данных
                end
                else begin
-                  txerr <= 1'b1;                         // установить флаг ошибки
-                  case(fp_next)                          // переход на завершающий этап
-                     fp_txp2: fp_state <= fp_ftxp;
-                     fp_rdp2: fp_state <= fp_frdp;
-                  endcase
+                  fp_state <= fp_bdl5;                   // таймаут - завершение
                end
             end
          end
-         fp_bdl1: begin // Биты описания и старшие биты адреса
+         fp_bdl2: begin // Биты описания и старшие биты адреса
             dbits[9:0] <=  bdlq[15:6];                   // биты описания
             haddr[21:16] <= bdlq[5:0];                   // старшая часть физического адреса
             baddr <= baddr + 1'b1;                       // следующее слово
-            fp_state <= fp_bdl2;                         // переход к младшей части адреса
+            fp_state <= fp_bdl3;                         // переход к младшей части адреса
          end
-         fp_bdl2: begin // Младшая часть адреса
+         fp_bdl3: begin // Младшая часть адреса
             haddr[15:1] <= bdlq[15:1];                   // младшая часть физического адреса
             baddr <= baddr + 1'b1;                       // следующее слово
-            fp_state <= fp_bdl3;                         // переход к счетчику слов
+            fp_state <= fp_bdl4;                         // переход к счетчику слов
          end
-         fp_bdl3: begin	// Счетчик слов
+         fp_bdl4: begin	// Счетчик слов
             wcount <= bdlq[11:0];                        // число слов
             baddr <= 11'o0;                              // сброс адреса
             locaddr <= 1'b0;                             // адрес сформированный в модуле DMA
-            fp_state <= fp_next;                         // переход к передаче
+            if(dbits[9])                                 // установлен бит V?
+               fp_state <= fp_next;                      // да - переход к передаче
+            else
+               fp_state <= fp_bdl5;                      // нет - завершение.
+         end
+         fp_bdl5: begin	// Переход на завершение
+            case(fp_next)
+               fp_txp2: begin
+                  fp_state <= fp_ftxp;                   // уход на завершение цикла передачи пакета данных
+                  txerr <= 1'b1;                         // устанавливаем флаг ошибки
+               end
+               fp_rlng: begin
+                  fp_state <= fp_frdp;                   // уход на завершение цикла приема пакета данных
+                  rderr <= 1'b1;                         // устанавливаем флаг ошибки
+                  rxdone <= 1'b1;                        // устанавливаем флаг завершения чтения
+               end
+            endcase
          end
 //=====================================================================================================================
 // Цикл передачи пакета данных
@@ -863,14 +885,12 @@ always @(posedge wb_clk_i) begin
             haddr[21:1] <= {tbdl_hir[5:0], tbdl_lwr[15:1]}; // физический адрес
             fp_next <= fp_txp2;                          // точка входа после завершения BDL цикла
             baddr <= 11'o0;                              // начальный адрес
-            txerr <= 1'b0;                               // сброс флага ошибки
-            wcount <= 12'o7774;                          // число слов BDL (-4)
+            wcount <= 12'o7777;                          // число слов BDL (-1)
             fp_state <= fp_bdl0;                         // переход к  BDL циклу
          end
          fp_txp2: begin // Передача данных сетевого пакета по каналу DMA
-            if(dbits[9] & dbits[7]) begin                // Установлены биты V & E ?
+            if(dbits[7]) begin                           // Установлен бит E?
                if(dmacomplete == 1'b0 & dmawr == 1'b0) begin
-                  txerr <= 1'b0;                         // Да: сброс флага ошибки;
                   dmawr <= 1'b1;                         // устанавливаем флаг записи по каналу DMA;
                   txcntb <= {wcount[9:0],1'b0} - dbits[0] - dbits[1];   // число байтов передачи;
                end
@@ -912,9 +932,8 @@ always @(posedge wb_clk_i) begin
          fp_rdp1: begin // Начальная подготовка
             haddr[21:1] <= {rbdl_hir[5:0], rbdl_lwr[15:1]}; // физический адрес
             baddr <= 11'o0;                              // начальный адрес
-//			   fp_next <= fp_rdp2;                          // точка входа после завершения BDL цикла
             fp_next <= fp_rlng;                          // точка входа после завершения BDL цикла
-            wcount <= 12'o7774;                          // число слов BDL (-4)
+            wcount <= 12'o7777;                          // число слов BDL (-1)
             fp_state <= fp_bdl0;                         // переход к  BDL циклу
          end
          fp_rlng: begin
@@ -925,7 +944,6 @@ always @(posedge wb_clk_i) begin
             if (dmacomplete == 1'b0 & dmard == 1'b0) begin
                baddr <= 11'o0;                           // сброс адреса
                wcount <= {2'b11, wcount[9:0]};           // формирование число слов передачи
-               rderr <= 1'b0;                            // сброс кода ошибки
                dmard <= 1'b1;                            // устанавливаем флаг чтения по каналу DMA
             end
             else if(dmard == 1'b1 & dmacomplete == 1'b1) begin
@@ -1020,7 +1038,7 @@ always @(posedge wb_clk_i) begin
                baddr <= 11'o0;
                locaddr <= 1'b0;                          // адрес сформированный в модуле DMA
                wcount <= 12'o7776;                       // число слов передачи (-2)
-               rderr <= 1'b0;
+//               rderr <= 1'b0;
                dmard <= 1'b1;                            // устанавливаем флаг чтения по каналу DMA
             end
             else if(dmard == 1'b1 & dmacomplete == 1'b1) begin
