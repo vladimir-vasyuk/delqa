@@ -46,6 +46,7 @@ localparam[3:0] dma_write_done = 8;
 reg  [3:0]  dma_state;
 
 
+//always @(posedge clk_i, posedge rst_i)  begin
 always @(posedge clk_i)  begin
    if (rst_i) begin
    // сброс

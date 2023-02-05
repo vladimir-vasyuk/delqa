@@ -3,8 +3,8 @@
 //---------------------------------------------------------------------------------
 // Регистры BDL
 //=================================================================================
-module bdlreg #(parameter NUM=4)
-(        
+module bdlreg #(parameter NUM=6)
+(
    input                clk,
    input  [NUM/2-1:0]   addr,
    input  [15:0]        data,
@@ -14,17 +14,9 @@ module bdlreg #(parameter NUM=4)
 
 reg[15:0] x[NUM-1:0];
 
-genvar i;
-generate
-   for (i = 0; i < NUM; i = i + 1)
-      begin : reg_init
-         initial
-            if(i == 0)
-               x[i] = 16'hFFFF;
-            else
-               x[i] = 16'b0;  // обнуление регистров
-      end
-endgenerate
+initial begin
+	x[0] <= 16'hFFFF;
+end
 
 assign q = x[addr];
 

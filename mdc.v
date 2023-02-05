@@ -54,6 +54,7 @@ reg [2:0] state;
 reg proc_status;
 
 always @(posedge clock or posedge rst) begin
+//always @(posedge clock) begin
 	if(rst) begin
 		start <= 1'b0; rw <= 1'b0;
 		proc_status <= 1'b0;

@@ -44,7 +44,8 @@ initial
    end
 
 // Основной блок
-always@(negedge clk) begin
+always@(negedge clk, posedge clr) begin
+//always@(negedge clk) begin
    if(clr) tx_state <= IDLE;
    else begin
       case(tx_state)

@@ -40,6 +40,7 @@ wire xferd = start & wstate32;
 
 // Cycle counter block
 always@(posedge mdc or posedge rst)
+//always@(posedge mdc)
 	begin
 		if(rst)
 			state <= 6'b111111;
@@ -53,6 +54,7 @@ always@(posedge mdc or posedge rst)
 
 // Store input data
 always@(posedge mdc or posedge rst)
+//always@(posedge mdc)
 	begin
 		if(rst)
 			dati = 16'o0;
@@ -106,6 +108,7 @@ end
 
 // Read data block
 always @(posedge mdc or posedge rst) begin
+//always @(posedge mdc) begin
 	if(rst)
 	dato <= 16'h0;
 	else if(rw == 1'b0) begin

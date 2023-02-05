@@ -26,13 +26,15 @@ assign rxdv_o = rxdvn;
 assign rxer_o = wr_err;
 
 // Генерация нового синхросигнала
-always @(posedge rxclk_i, posedge rst) begin
+always @(posedge rxclk_i, posedge rst)
+//always @(posedge rxclk_i)
    if(rst)  rxclk_reg <= 1'b0;
    else     rxclk_reg <= rxclk_reg + 1'b1;
-end
+
 
 // Чтение 2-х полубайт и запись в кольцевой буфер
 always @(posedge rxclk_i, posedge rst) begin
+//always @(posedge rxclk_i) begin
    if(rst) begin
       eo <= 1'b0;
       waddr <= 1'b0; wr_err <= 1'b0;
@@ -58,6 +60,7 @@ end
 
 // Чтение кольцевого буфера
 always @(posedge rxclk_o, posedge rst) begin
+//always @(posedge rxclk_o) begin
    if(rst) begin
       dato <= 8'o0; raddr <= 1'b0; rxdvn <= 1'b0;
    end

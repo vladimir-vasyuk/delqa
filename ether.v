@@ -3,11 +3,13 @@
 //=================================================================================
 module ether(
    input          rst,        // Сброс
+	input				mcast,		// Сигнал mulsicast
+	input				promis,		// Сигнал promiscuous
    input          txrdy,      // Сигнал готовности данных передачи
    input          rxdone,     // Сигнал подтверждения приема
    input  [10:0]  txcntb,     // Счетчик данных передачи (байт)
    input  [31:0]  etxdbus,    // Шина данных блока передачи (память -> ether модуль)
-   input  [3:0]   lbmode,     // Разрешение приема
+   input  [4:0]   lbmode,     // Режим работы модуля Ethernet
    output [8:0]   etxaddr,    // Регистр адреса блока передачи (память -> ether модуль)
    output [8:0]   erxaddr,    // Регистр адреса блока приема (ether модуль -> память)
    output [31:0]  erxdbus,    // Шина данных блока приема (ether модуль -> память)
@@ -54,7 +56,8 @@ wire        crcenrx;    // Сигнал разрешения CRC канала п
 wire        mdc_err;    // Сигнал ошибки
 
 //================== Прием/передача =================//
-reg         skipb;      // Пропуск байта (DescriptorBits[6])
+//reg         skipb;      // Пропуск байта (DescriptorBits[6])
+wire			skipb;		// Пропуск байта (DescriptorBits[6])
 wire        rxena;      // Разрешение приема
 wire        rx_crc_err; // CRC ошибка канала приема
 wire        rx_err;     // Ошибка канала приема
@@ -63,9 +66,14 @@ assign crs_err = (e_rxer & (~e_rxdv))? 1'b1 : 1'b0;
 assign errs = {3'd0, crs_err, mdc_err, e_txer, rx_err, rx_crc_err};
 
 //================= Внутренняя петля ================//
-reg         loop;
-reg         ext_loop;
-reg         rx_enable;
+//reg         loop;
+//reg         ext_loop;
+//reg         rx_enable;
+//reg         setup;
+wire			loop;
+wire			ext_loop;
+wire			rx_enable;
+wire			setup;
 
 // ===== Gigabit mode - speed=1000 and link=OK ======//
 wire        gbmode;
@@ -117,15 +125,13 @@ assign e_txd[7:0] = gbmode? txdb[7:0] : {4'o0,ddoutm[3:0]};                // Д
 assign {e_txen, e_txer} = loop? {1'b0, 1'b0} : (gbmode? {txens, txers} : {txeno, txero | txers});  // Сигналы управления
 
 //======== Обработка данных канала передачи ========//
-//wire [10:0]  txcntbl;
 wire        txclkl;        // Синхросигнал канала передачи с учетом петли
-//assign txcntbl	= int_loop? 11'o3772 : txcntb;	// -6 байтов (для Internal loopback) или нормальный разиер
 assign txclkl	= loop? e_rxc : txclk;
 
 ethsend ethsendm(
    .clk(txclkl),
    .clr(rst),
-   .txena(txrdy),
+   .txena(txrdyl),
    .txdone(txdone),
    .txen(txens),
    .dataout(txdb),
@@ -148,7 +154,6 @@ wire        rxerl;         // Сигнал ошибки данных канал�
 assign rxdbl = loop? txdb : rxdb;
 assign rxdvl = loop? txens : rxdv;
 assign rxclkl = loop? ~e_rxc : rxclk;
-//assign rxclkl = loop? ~rxclkm : rxclk;
 assign rxerl = loop? txers : rxer;
 assign rxclkb = rxclkl;
 assign rxena = loop? loop : rx_enable;
@@ -166,7 +171,7 @@ ethreceive ethrcvm(
    .rxwrn(erxwrn),
    .rxrdy(rxrdy),
 // .mymac(macbus),
-   .rxdone(rxdone),
+   .rxdone(rxdonel),
    .crc(crcrx),
    .crcen(crcenrx),
    .crcre(crcrerx),
@@ -219,16 +224,26 @@ mdc mdcm(
    .status(md_status)
 );
 
+reg  [1:0]	rx_ena_r, loop_r, eloop_r, skipb_r, setup_r;
+reg  [1:0]	txrdy_r, rxdn_r;
+wire			txrdyl, rxdonel;
 
 always @(posedge e_rxc) begin
-   if (rst == 1'b1) begin
-      loop <= 1'b0; ext_loop <= 1'b0;
-      skipb <= 1'b0; rx_enable <= 1'b0;
-   end
-   else begin
-      rx_enable <= lbmode[0]; loop <= lbmode[1];
-      ext_loop <= lbmode[2]; skipb <= lbmode[3];
-   end
+	rx_ena_r[0] <= lbmode[0]; rx_ena_r[1] <= rx_ena_r[0];
+	loop_r[0] <= lbmode[1]; loop_r[1] <= loop_r[0];
+	eloop_r[0] <= lbmode[2]; eloop_r[1] <= eloop_r[0];
+	skipb_r[0] <= lbmode[3]; skipb_r[0] <= skipb_r[1];
+	setup_r[0] <= lbmode[4]; setup_r[0] <= setup_r[1];
+	txrdy_r[0] <= txrdy; txrdy_r[1] <= txrdy_r[0];
+	rxdn_r[0] <= rxdone; rxdn_r[1] <= rxdn_r[0];
 end
+
+assign rx_enable = rx_ena_r[1];
+assign loop = loop_r[1];
+assign ext_loop = eloop_r[1];
+assign skipb = skipb_r[1];
+assign setup = setup_r[1];
+assign txrdyl = txrdy_r[1];
+assign rxdonel = rxdn_r[1];
 
 endmodule

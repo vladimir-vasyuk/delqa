@@ -22,13 +22,15 @@ assign dat_o = dato;
 assign txerr_o = wr_err;
 
 // Генерация нового синхросигнала
-always @(posedge txclk_i, posedge rst) begin
+always @(posedge txclk_i, posedge rst)
+//always @(posedge txclk_i)
    if(rst)  txclk_reg <= 1'b0;
    else     txclk_reg <= txclk_reg + 1'b1;
-end
+
 assign txclk_o = txclk_reg;
 
 always @(negedge txclk_o, posedge rst) begin
+//always @(negedge txclk_o) begin
    if(rst) begin
       waddr <= 2'b0; wr_err <= 1'b0;
    end
@@ -44,6 +46,7 @@ always @(negedge txclk_o, posedge rst) begin
 end
 
 always @(negedge txclk_i, posedge rst) begin
+//always @(negedge txclk_i) begin
    if(rst) begin
       eo <= 1'b0; txen_o <= 1'b0;
       raddr <= 2'b0; dato <= 4'o0;
