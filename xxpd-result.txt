@@ -1,146 +1,89 @@
-TST: 001
-SKIPPING SELF-TEST - No loopback or H4000 connected.
-TST: 002
-Station address is:    AA-00-04-00-64-F8
+DR>START/FLAG:PNT
 
+Unit 0 is a DELQA-DESQA in DELQA mode.
+
+TST: 001
+TST: 002
 TST: 003
 CZQNA DVC FTL ERR  00301 ON UNIT 00 TST 003 SUB 000 PC: 046304
 Attempt to load Boot/Doagnostic Code timed out.
 
 TST: 004
-CZQNA DVC FTL ERR  00403 ON UNIT 00 TST 004 SUB 000 PC: 047346
-1st Transmit descriptor flag word status not set to "used"
-
-CZQNA DVC FTL ERR  00404 ON UNIT 00 TST 004 SUB 000 PC: 047374
-2nd Transmit descriptor flag word status not set to "used"
-
-CZQNA DVC FTL ERR  00405 ON UNIT 00 TST 004 SUB 000 PC: 047414
-Transmit list remained valid after transmit operation complete
-
-CZQNA DVC FTL ERR  00453 ON UNIT 00 TST 004 SUB 000 PC: 047602
-1st Receive descriptor flag word status not set to "used"
-
-CZQNA DVC FTL ERR  00454 ON UNIT 00 TST 004 SUB 000 PC: 047640
-2nd Receive descriptor flag word not set to "used"
-
 TST: 005
-Error in Transmit descriptor flag word.
-Expected value was 140000, actual value was 100000
-Error in Receive descriptor flag word.
-Expected value was 140000, actual value was 100000
-Error in Receive status word 1.
-Expected value was 020000, actual value was 000000
+Error in Receive byte count.
+Expected value was 000202, actual value was 000000
 Setup packet operation status check failed.
 Operation to enter promisicous mode failed.
 CZQNA DVC FTL ERR  00510 ON UNIT 00 TST 005 SUB 000 PC: 051026
 Attempt to set UUT into promiscuous mode failed.
 
 TST: 006
-Error in Transmit descriptor flag word.
-Expected value was 140000, actual value was 100000
-Error in Receive descriptor flag word.
-Expected value was 140000, actual value was 100000
-Error in Receive status word 1.
-Expected value was 020000, actual value was 000000
+Error in Receive byte count.
+Expected value was 000202, actual value was 000000
 Setup packet operation status check failed.
 Operation to enter promisicous mode failed.
 CZQNA DVC FTL ERR  00601 ON UNIT 00 TST 006 SUB 000 PC: 054524
 Attempt to set UUT into promiscuous mode failed.
 
 TST: 007
+CZQNA DVC FTL ERR  00701 ON UNIT 00 TST 007 SUB 000 PC: 057420
+Transmit timed-out
+
 Error in CSR.
-Expected value was 110220, actual value was 110260
-Error in Transmit descriptor flag word.
-Expected value was 140000, actual value was 100000
+Expected value was 110220, actual value was 010220
 Error in Receive descriptor flag word.
 Expected value was 140000, actual value was 100000
 Error in Receive status word 1.
-Expected value was 140000, actual value was 000000
+Expected value was 140000, actual value was 100000
 CZQNA DVC FTL ERR  00702 ON UNIT 00 TST 007 SUB 000 PC: 057060
 Error in Transmit status
 
 TST: 008
-Error in Transmit descriptor flag word.
-Expected value was 140000, actual value was 100000
-Error in Receive descriptor flag word.
-Expected value was 140000, actual value was 100000
 Error in Receive status word 1.
-Expected value was 020000, actual value was 000000
+Expected value was 020000, actual value was 020010
 CZQNA DVC FTL ERR  00802 ON UNIT 00 TST 008 SUB 000 PC: 060606
 Internal Extended Loopback Operation returned incorrect status.
 
 TST: 009
-Error in Transmit descriptor flag word.
-Expected value was 140000, actual value was 100000
-Error in Receive descriptor flag word.
-Expected value was 140000, actual value was 100000
 Error in Receive status word 1.
 Expected value was 020000, actual value was 100000
 CZQNA DVC FTL ERR  00901 ON UNIT 00 TST 009 SUB 000 PC: 061440
 Incorrect status after loopback from low to high memory
 
 TST: 010
-Error in Transmit descriptor flag word.
-Expected value was 140000, actual value was 100000
-Error in Receive descriptor flag word.
-Expected value was 140000, actual value was 100000
-Error in Receive status word 1.
-Expected value was 020000, actual value was 000000
+Error in Receive byte count.
+Expected value was 000200, actual value was 000000
 Setup packet operation status check failed.
 CZQNA DVC FTL ERR  01001 ON UNIT 00 TST 010 SUB 000 PC: 064420
 Setup packet operation failed.
 
 TST: 011
-Error in Transmit descriptor flag word.
-Expected value was 140000, actual value was 100000
-Error in Receive descriptor flag word.
-Expected value was 140000, actual value was 100000
 Error in Receive status word 1.
-Expected value was 020000, actual value was 000000
+Expected value was 020000, actual value was 020013
+Error in Receive byte count.
+Expected value was 000202, actual value was 000233
 Setup packet operation status check failed.
 CZQNA DVC FTL ERR  01101 ON UNIT 00 TST 011 SUB 000 PC: 065666
 Promiscuous mode set-up packet failed.
 
 TST: 012
-Error in Transmit descriptor flag word.
-Expected value was 140000, actual value was 100000
-Error in Receive descriptor flag word.
-Expected value was 140000, actual value was 100000
-Error in Receive status word 1.
-Expected value was 020000, actual value was 000000
+Error in Receive byte count.
+Expected value was 000202, actual value was 000000
 Setup packet operation status check failed.
 Operation to enter promisicous mode failed.
 CZQNA DVC FTL ERR  01201 ON UNIT 00 TST 012 SUB 000 PC: 070202
 Attempt to set UUT into promiscuous mode failed.
 
-Error in Transmit descriptor flag word.
-Expected value was 140000, actual value was 100000
-Error in Receive descriptor flag word.
-Expected value was 140000, actual value was 100000
-Error in Receive status word 1.
-Expected value was 020000, actual value was 000000
+Error in Receive byte count.
+Expected value was 000210, actual value was 000000
 Setup packet operation status check failed.
 CZQNA DVC FTL ERR  01207 ON UNIT 00 TST 012 SUB 000 PC: 070622
 Setup packet to turn off LED 2 failed.
 
 TST: 013
-SKIPPING TEST 13 - No loopback or H4000 connected.
 TST: 014
-SKIPPING TEST 14 - No loopback or H4000 connected.
 TST: 015
-TEST 15 - SANITY TIMER NOT BEING TESTED.
-
-NOTE: To run this test the CPU (KDF11-BA) must be in Power
-
-Up Mode 0 (J18 to J19 and J18 to J17 removed) or test will fail.
-
-Error in Transmit descriptor flag word.
-Expected value was 140000, actual value was 100000
-Error in Receive descriptor flag word.
-Expected value was 140000, actual value was 100000
-Error in Receive status word 1.
-Expected value was 020000, actual value was 000000
+Error in Receive byte count.
+Expected value was 000200, actual value was 000000
 Setup packet operation status check failed.
-CZQNA EOP    1
-   15 TOTAL ERRS
-
+CZQNA EOP    4
