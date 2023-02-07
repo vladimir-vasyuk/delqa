@@ -7,7 +7,7 @@ module santim(
    output		out			// Выход, активный 1
 );
 
-assign out = nbdcok;
+assign out = ~nbdcok;
 
 reg  [6:0]	sanity_cnt;		// Таймер
 wire 			qsc;				// Тактовая 1/4 секунды
@@ -54,7 +54,7 @@ wire sanity_clk = sanity[2]? mc : qsc;		// Новая тактовая
 wire nzc = |sanity_cnt;							// сигнал "таймер не нуль"
 wire timer_ena = pwse | ena;					// Разрешение работы таймера
 wire reset= rst | (~ena);
-always @(posedge sanity_clk, posedge reset) begin
+always @(posedge sanity_clk) begin
 	if(reset) begin
 		casez(sanity) // Началаьное значение таймера
 			3'b?00: sanity_cnt = 7'd1;			// 1
@@ -98,7 +98,7 @@ localparam	DREG_WIDTH = log2(LIMIT);
 reg  [DREG_WIDTH-1:0]	delay;
 reg							tics;
 
-always @(posedge clock, posedge rst) begin
+always @(posedge clock) begin
    if(rst) begin
       delay <= 0; tics <= 1'b0;
    end

@@ -21,7 +21,7 @@ module delqa (
    input						wb_stb_i,   // строб цикла шины
    input      [1:0]		wb_sel_i,   // выбор байтов для записи 
    output					wb_ack_o,   // подтверждение выбора устройства
-	output					nbdcok,
+	output					bdcok,
 
 // обработка прерывания   
    output reg           irq,        // запрос
@@ -88,8 +88,8 @@ wire			res_soft;
 wire        comb_res = res_soft | wb_rst_i;
 
 reg			busy;					// Регистр индикации занятости
-reg			st_ena;				// Разрешение/запрет для sanity timer
-reg			st_res;				// Сброс sanity timer нормальной операцией
+reg			santm_ena;			// Разрешение/запрет для sanity timer
+reg			santm_res;			// Сброс sanity timer нормальной операцией
 
 //************************************************
 // Base address 174440 (17774440 - 22-битная шина)
@@ -465,7 +465,7 @@ initial begin
    {bdl_v, bdl_c, bdl_e, bdl_s, bdl_l, bdl_h} <= 6'b0;
 	busy <= 1'b0;
 	md_mux <= 1'b0;
-	st_ena <= 1'b0; st_res <= 1'b0;
+	santm_ena <= 1'b0; santm_res <= 1'b0;
 end
 
 reg  [1:0]	rxrdy_r, txdone_r;
@@ -799,7 +799,7 @@ always @(posedge wb_clk_i) begin
 		mcasf <= 1'b0;
 		promf <= 1'b0;
 		sanity <= 3'b101;
-		st_ena <= 1'b0; st_res <= 1'b0;
+		santm_ena <= 1'b0; santm_res <= 1'b0;
    end
    // Рабочие состояния
    else  begin
@@ -876,7 +876,7 @@ always @(posedge wb_clk_i) begin
 				else begin												// Не Setup пакет:
 					bcount <= bcount - bdl_l - bdl_h;			// -  коректировка кол-ва байтов
 					wcount <= bdldat[11:0];							// - значение числа слов передачи
-					st_res <= 1'b1;									// - сброс sanity timer
+					santm_res <= 1'b1;								// - сброс sanity timer
 					fp_state <= fp_bdlc;								// - пропуск обработки контрольного регистра
 				end
 			end
@@ -884,7 +884,7 @@ always @(posedge wb_clk_i) begin
 				mcasf <= bcount[0];
 				promf <= bcount[1];
 				sanity <= bcount[6:4];
-				st_ena <= csr_se;
+				santm_ena <= csr_se;
 				if(bcount < 12'o0200)
 					fp_state <= fp_bdle;
 				fp_state <= fp_bdlc;
@@ -1103,7 +1103,7 @@ always @(posedge wb_clk_i) begin
             else if(dmard == 1'b1 & dmacomplete == 1'b1) begin
                dmard <= 1'b0;                            // снимаем флаг чтения по каналу DMA
 					bdlbus <= 1'b0;
-					st_res <= 1'b0;									// убираем сигнал сброса sanity timer
+					santm_res <= 1'b0;								// убираем сигнал сброса sanity timer
                fp_state <= fp_next;                      // переход к завершающему шагу
                if(nxm)                                   // операция окончилась по таймауту?
                   rderr <= 1'b1;                         // устанавливаем флаг ошибки
@@ -1157,14 +1157,14 @@ mdc_clk mclk(
 );
 assign e_mdc = md_clock;
 
-wire sanres = st_res | comb_res;		// Комбинированный сброс таймера
+wire sanres = santm_res | comb_res;		// Комбинированный сброс таймера
 santim santm(
 	.clock(md_clock),
 	.rst(sanres),
 	.pwse(pwse),
 	.sanity(sanity),
-	.ena(st_ena),
-	.out(nbdcok)
+	.ena(santm_ena),
+	.out(bdcok)
 );
 
 endmodule
