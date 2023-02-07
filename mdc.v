@@ -7,7 +7,7 @@ module mdc(
 	input  	   	clock,		// Синхросигнал, мин. период 400 нс
 	input				rst,			// Сигнал сброса
 	input				evt,			// Сигнал периодического опроса состояния
-	inout				mdio,			// Линия данных
+	inout				mdiol,		// Линия данных
 	output reg		err,			// Сигнал ошибки (не задействован)
 	input  [6:0]	ctrl,			// Контрольный байт
 	input  [15:0]	val,			// Данные записи в регистры
@@ -128,7 +128,7 @@ mdio mdiom(
 	.data_o(datao),
 	.start(start),
 	.rw(rw),
-	.mdio(mdio),
+	.mdiol(mdiol),
 	.done(done)
 );         
 
