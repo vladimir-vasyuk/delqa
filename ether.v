@@ -216,7 +216,7 @@ mdc mdcm(
    .clock(md_clk),
    .rst(rst),
    .evt(md_evt),
-   .mdio(e_mdio),
+   .mdiol(e_mdio),
    .err(mdc_err),
    .ctrl(md_ctrl),
    .val(md_val),

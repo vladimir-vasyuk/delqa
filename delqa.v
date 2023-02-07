@@ -21,6 +21,7 @@ module delqa (
    input						wb_stb_i,   // строб цикла шины
    input      [1:0]		wb_sel_i,   // выбор байтов для записи 
    output					wb_ack_o,   // подтверждение выбора устройства
+	output					nbdcok,
 
 // обработка прерывания   
    output reg           irq,        // запрос
@@ -49,7 +50,11 @@ module delqa (
    output					e_rst,      // Hardware reset, active low
    output					e_mdc,      // MDC clock
    inout						e_mdio,     // MD line
-   output					e_gtxc      // 125 MHz
+   output					e_gtxc,		// 125 MHz
+
+// переключатели
+	input						s3,			// выбор режима
+	input						s4				// выбор дополнений
 );
 
 //************************************************
@@ -74,15 +79,17 @@ wire [11:0] swcount = {4'b0,bcount[8:7], 6'b0};
 // Переключатели
 //************************************************
 reg         s1;               // выбор адреса устройства
-reg			s3;               // выбор режима
-reg			s4;               // выбор дополнений
+//reg			s3;               // выбор режима
+//reg			s4;               // выбор дополнений
+wire pwse = s3 & s4;				// Sanity Timer разрешен при включении
 
 // Комбинированный сброс
 wire			res_soft;
 wire        comb_res = res_soft | wb_rst_i;
 
-// Регистр индикации занятости
-reg			busy;
+reg			busy;					// Регистр индикации занятости
+reg			st_ena;				// Разрешение/запрет для sanity timer
+reg			st_res;				// Сброс sanity timer нормальной операцией
 
 //************************************************
 // Base address 174440 (17774440 - 22-битная шина)
@@ -446,7 +453,7 @@ soft_reset sftresm(
 // Инициализация
 //************************************************
 initial begin
-   s1 <= 1'b0; s3 <= 1'b0; s4 <= 1'b0;
+   s1 <= 1'b0; //s3 <= 1'b0; s4 <= 1'b0;
    funcreg <= 3'b0; 
    dmawr <= 1'b0; dmard <= 1'b0;
    txrdy <= 1'b0; rxdone <= 1'b0;
@@ -458,6 +465,7 @@ initial begin
    {bdl_v, bdl_c, bdl_e, bdl_s, bdl_l, bdl_h} <= 6'b0;
 	busy <= 1'b0;
 	md_mux <= 1'b0;
+	st_ena <= 1'b0; st_res <= 1'b0;
 end
 
 reg  [1:0]	rxrdy_r, txdone_r;
@@ -790,7 +798,8 @@ always @(posedge wb_clk_i) begin
 		setupreg <= 1'b0;						// S-бит
 		mcasf <= 1'b0;
 		promf <= 1'b0;
-		sanity <= 3'b0;
+		sanity <= 3'b101;
+		st_ena <= 1'b0; st_res <= 1'b0;
    end
    // Рабочие состояния
    else  begin
@@ -867,13 +876,15 @@ always @(posedge wb_clk_i) begin
 				else begin												// Не Setup пакет:
 					bcount <= bcount - bdl_l - bdl_h;			// -  коректировка кол-ва байтов
 					wcount <= bdldat[11:0];							// - значение числа слов передачи
+					st_res <= 1'b1;									// - сброс sanity timer
 					fp_state <= fp_bdlc;								// - пропуск обработки контрольного регистра
 				end
 			end
-			fp_bdls: begin	// Обработка контрольного регистраSetup пакета
+			fp_bdls: begin	// Обработка контрольного регистра Setup пакета
 				mcasf <= bcount[0];
 				promf <= bcount[1];
 				sanity <= bcount[6:4];
+				st_ena <= csr_se;
 				if(bcount < 12'o0200)
 					fp_state <= fp_bdle;
 				fp_state <= fp_bdlc;
@@ -1092,6 +1103,7 @@ always @(posedge wb_clk_i) begin
             else if(dmard == 1'b1 & dmacomplete == 1'b1) begin
                dmard <= 1'b0;                            // снимаем флаг чтения по каналу DMA
 					bdlbus <= 1'b0;
+					st_res <= 1'b0;									// убираем сигнал сброса sanity timer
                fp_state <= fp_next;                      // переход к завершающему шагу
                if(nxm)                                   // операция окончилась по таймауту?
                   rderr <= 1'b1;                         // устанавливаем флаг ошибки
@@ -1145,13 +1157,14 @@ mdc_clk mclk(
 );
 assign e_mdc = md_clock;
 
-wire keep_sanout;
-assign sanout = keep_sanout;
+wire sanres = st_res | comb_res;		// Комбинированный сброс таймера
 santim santm(
-	.clock(wb_clk_i),
-	.rst(comb_res),
+	.clock(md_clock),
+	.rst(sanres),
+	.pwse(pwse),
 	.sanity(sanity),
-	.out(sanout)
+	.ena(st_ena),
+	.out(nbdcok)
 );
 
 endmodule

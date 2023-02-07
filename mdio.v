@@ -12,7 +12,7 @@ module mdio(
 	output [15:0]	data_o,				// Receive data (from the module)
 	input				start,				// Start signal, active high/ Goes low if done signal is high.
 	input				rw,					// Read/write (0/1) - operation type.
-	inout				mdio,					// MDIO line
+	inout				mdiol,					// MDIO line
 	output			done					// Transfer completed signal
 );         
 
@@ -23,8 +23,8 @@ reg  [15:0] dato, dati;					// Data buffers
 reg  [1:0] opcode[1:0];					// Opcode (selected by "rw" signal)
 
 wire mdii;									// Input line
-assign mdio = wrdir? 1'bz : mdo;		// Bidirection: - output
-assign mdii = wrdir? mdio : 1'b0;	// Bidirection: - input
+assign mdiol = wrdir? 1'bz : mdo;	// Bidirection: - output
+assign mdii = wrdir? mdiol : 1'b0;	// Bidirection: - input
 assign done = xferd;
 assign data_o = dato;
 

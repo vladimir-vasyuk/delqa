@@ -7,7 +7,7 @@ module mdc_clk(
 
 reg [4:0] delay = 5'o0;
 reg [21:0] sdelay = 22'b0;
-localparam limit = 5'd10;
+localparam limit = 5'd9;
 
 always @(posedge clock or posedge rst) begin
    if(rst) begin

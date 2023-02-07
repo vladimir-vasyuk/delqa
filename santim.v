@@ -1,6 +1,7 @@
 module santim(
    input       clock,      // 2,5 MHz тактовая
    input       rst,        // Сигнал сброса
+	input			pwse,			// Таймер разрешен при включении
 	input [2:0]	sanity,		// Значение задержки
 	input			ena,			// Разрешение работы
    output		out			// Выход, активный 1
@@ -51,9 +52,10 @@ time_counter #(.LIMIT(240)) mins
 
 wire sanity_clk = sanity[2]? mc : qsc;		// Новая тактовая
 wire nzc = |sanity_cnt;							// сигнал "таймер не нуль"
-
-always @(posedge sanity_clk) begin
-	if(rst | (~ena)) begin
+wire timer_ena = pwse | ena;					// Разрешение работы таймера
+wire reset= rst | (~ena);
+always @(posedge sanity_clk, posedge reset) begin
+	if(reset) begin
 		casez(sanity) // Началаьное значение таймера
 			3'b?00: sanity_cnt = 7'd1;			// 1
 			3'b?01: sanity_cnt = 7'd1;			// 4
@@ -62,7 +64,7 @@ always @(posedge sanity_clk) begin
 		endcase
 	end
 	else begin
-		if(ena & nzc) sanity_cnt <= sanity_cnt - 1'b1;
+		if(timer_ena) sanity_cnt <= sanity_cnt - 1'b1;
 	end
 end
 
@@ -96,7 +98,7 @@ localparam	DREG_WIDTH = log2(LIMIT);
 reg  [DREG_WIDTH-1:0]	delay;
 reg							tics;
 
-always @(posedge clock) begin
+always @(posedge clock, posedge rst) begin
    if(rst) begin
       delay <= 0; tics <= 1'b0;
    end
