@@ -876,7 +876,6 @@ always @(posedge wb_clk_i) begin
 				else begin												// Не Setup пакет:
 					bcount <= bcount - bdl_l - bdl_h;			// -  коректировка кол-ва байтов
 					wcount <= bdldat[11:0];							// - значение числа слов передачи
-					santm_res <= 1'b1;								// - сброс sanity timer
 					fp_state <= fp_bdlc;								// - пропуск обработки контрольного регистра
 				end
 			end
@@ -894,6 +893,7 @@ always @(posedge wb_clk_i) begin
 					fp_state <= fp_next;                      // да - переход к передаче
 					baddr <= 11'o0;									// сброс адреса
 					locaddr <= 1'b0;									// адрес сформированный в модуле DMA
+					if(~bdl_s) santm_res <= 1'b1;					// - сброс sanity timer
 				end
             else
                fp_state <= fp_bdle;								// нет - завершение.
@@ -1158,12 +1158,12 @@ mdc_clk mclk(
 assign e_mdc = md_clock;
 
 wire sanres = santm_res | comb_res;		// Комбинированный сброс таймера
+wire sanena = santm_ena | pwse;
 santim santm(
 	.clock(md_clock),
 	.rst(sanres),
-	.pwse(pwse),
+	.ena(sanena),
 	.sanity(sanity),
-	.ena(santm_ena),
 	.out(bdcok)
 );
 
